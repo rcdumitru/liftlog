@@ -86,9 +86,27 @@ export const DEFAULT_PROFILE: Profile = {
   units: 'kg',
   bodyweight: 80,
   goal: 'hypertrophy',
+  showSuggestions: true,
+  progressGroup: 'day',
 };
 
 export const norm = (name: string) => name.trim().toLowerCase();
+
+/** Broad muscle groups, in display order; each matches the free-text `muscle` field by keyword. */
+export const MUSCLE_GROUPS: [string, string[]][] = [
+  ['Chest', ['chest', 'pec']],
+  // Shoulders before Back so "lateral delts" isn't caught by "lat".
+  ['Shoulders', ['shoulder', 'delt']],
+  ['Back', ['back', 'lat', 'trap', 'posterior chain', 'rhomboid']],
+  ['Arms', ['bicep', 'tricep', 'forearm', 'arm']],
+  ['Legs', ['quad', 'hamstring', 'glute', 'calf', 'calves', 'leg', 'adductor', 'abductor']],
+  ['Core', ['core', 'abs', 'oblique']],
+];
+
+export const muscleGroup = (muscle: string) => {
+  const m = norm(muscle);
+  return MUSCLE_GROUPS.find(([, keys]) => keys.some((k) => m.includes(k)))?.[0] ?? 'Other';
+};
 
 /** Most recent completed session entry for an exercise (matched by name). */
 export function lastPerformance(sessions: Session[], name: string) {
@@ -122,9 +140,6 @@ export function suggestNext(sessions: Session[], exercise: Exercise): { weight: 
 }
 
 const round = (n: number) => Math.round(n * 4) / 4;
-
-/** Epley estimated one-rep max. */
-export const e1rm = (weight: number, reps: number) => (reps <= 1 ? weight : weight * (1 + reps / 30));
 
 export const formatRest = (sec: number) => {
   const m = Math.floor(sec / 60);

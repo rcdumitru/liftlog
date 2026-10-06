@@ -38,8 +38,9 @@ export default function Train() {
       {days.map((d) => {
         const last = lastByDay(d.id);
         const mins = Math.round(d.exercises.reduce((t, e) => t + e.sets * (45 + e.restSec), 0) / 60);
+        const blocked = !!active && active.dayId !== d.id;
         return (
-          <Card key={d.id}>
+          <Card key={d.id} onPress={blocked ? undefined : () => router.push(`/workout/${d.id}`)}>
             <Row style={{ flexWrap: 'nowrap', alignItems: 'flex-start' }}>
               <View style={{ flex: 1 }}>
                 <Text style={[s.h2, { fontSize: 22 }]}>{d.name}</Text>
@@ -66,7 +67,7 @@ export default function Train() {
               <Button
                 small
                 label={active?.dayId === d.id ? 'Resume' : 'Start'}
-                disabled={!!active && active.dayId !== d.id}
+                disabled={blocked}
                 onPress={() => router.push(`/workout/${d.id}`)}
               />
             </Row>

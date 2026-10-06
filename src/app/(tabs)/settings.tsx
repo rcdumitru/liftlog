@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Switch, Text, View } from 'react-native';
 import { Button, Card, Chip, Field, Row, Screen, Section, s } from '@/components/ui';
 import { confirm } from '@/lib/confirm';
 import { GOAL_PRESETS } from '@/lib/defaults';
@@ -25,6 +25,22 @@ export default function Settings() {
           {(Object.keys(GOAL_PRESETS) as Goal[]).map((g) => <Chip key={g} label={GOAL_PRESETS[g].label} active={p.goal === g} onPress={() => up({ goal: g })} />)}
         </Row>
         <Text style={[s.muted, { fontSize: 13 }]}>{GOAL_PRESETS[p.goal].blurb}</Text>
+      </Card>
+
+      <Section title="Workout" />
+      <Card>
+        <Row style={{ flexWrap: 'nowrap' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={s.body}>Show weight suggestions</Text>
+            <Text style={[s.muted, { fontSize: 13 }]}>Hint above each exercise, e.g. “Hit 12 reps on every set — add 2.5”.</Text>
+          </View>
+          <Switch
+            value={p.showSuggestions}
+            onValueChange={(showSuggestions) => up({ showSuggestions })}
+            trackColor={{ true: C.accent, false: C.border }}
+            thumbColor="#fff"
+          />
+        </Row>
       </Card>
 
       <Section title="Data" />

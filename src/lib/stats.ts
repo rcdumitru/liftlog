@@ -1,11 +1,10 @@
-import { e1rm, norm } from './defaults';
+import { norm } from './defaults';
 import type { Session } from './types';
 
 export interface ExercisePoint {
   date: string;
   topWeight: number;
   topReps: number;
-  e1rm: number;
   volume: number;
   sets: { weight: number; reps: number }[];
 }
@@ -25,7 +24,6 @@ export function exerciseHistory(sessions: Session[]): Map<string, { name: string
         date: s.startedAt,
         topWeight: top.weight,
         topReps: top.reps,
-        e1rm: Math.max(...done.map((x) => e1rm(x.weight, x.reps))),
         volume: done.reduce((t, x) => t + x.weight * x.reps, 0),
         sets: done.map(({ weight, reps }) => ({ weight, reps })),
       });

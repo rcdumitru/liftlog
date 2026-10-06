@@ -82,7 +82,8 @@ export const actions = {
   deleteDay(id: string) {
     setState((s) => ({ days: s.days.filter((d) => d.id !== id) }));
   },
-  startWorkout(day: WorkoutDay, suggested: Record<string, number | null>) {
+  /** Sets start empty: they record what was actually lifted, filled in as each set is done. */
+  startWorkout(day: WorkoutDay) {
     const session: Session = {
       id: uid(),
       dayId: day.id,
@@ -92,7 +93,7 @@ export const actions = {
         exerciseId: e.id,
         name: e.name,
         target: { sets: e.sets, repsMin: e.repsMin, repsMax: e.repsMax },
-        sets: Array.from({ length: e.sets }, () => ({ weight: suggested[e.id] ?? 0, reps: e.repsMax, done: false })),
+        sets: Array.from({ length: e.sets }, () => ({ weight: 0, reps: 0, done: false })),
       })),
     };
     setState({ active: session });

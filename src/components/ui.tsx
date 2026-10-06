@@ -74,7 +74,7 @@ export function Field({ label, hint, ...props }: TextInputProps & { label: strin
 }
 
 /** Numeric input that keeps a local text buffer so users can type "72." etc. */
-export function NumInput({ value, onChange, style, width = 64 }: { value: number; onChange: (n: number) => void; style?: object; width?: number }) {
+export function NumInput({ value, onChange, style, width = 64, placeholder = '0' }: { value: number; onChange: (n: number) => void; style?: object; width?: number; placeholder?: string }) {
   const [text, setText] = useState(value ? String(value) : '');
   useEffect(() => {
     // Sync from outside (e.g. "copy to all sets") without clobbering "72." mid-typing.
@@ -84,7 +84,7 @@ export function NumInput({ value, onChange, style, width = 64 }: { value: number
   return (
     <TextInput
       value={text}
-      placeholder="0"
+      placeholder={placeholder}
       placeholderTextColor={C.faint}
       keyboardType="decimal-pad"
       selectTextOnFocus

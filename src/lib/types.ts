@@ -49,4 +49,8 @@ export interface Profile {
   units: Units;
   bodyweight: number;
   goal: Goal;
+  /** Show the next-weight hint above each exercise's sets during a workout. */
+  showSuggestions: boolean;
+  /** How the Progress tab groups exercises. */
+  progressGroup: 'day' | 'muscle';
 }
