@@ -69,12 +69,18 @@ export function Field({ label, ...props }: TextInputProps & { label: string }) {
   );
 }
 
-/** Numeric input that keeps a local text buffer so users can type "72." etc. */
-export function NumInput({ value, onChange, style, width = 64, placeholder = '0' }: { value: number; onChange: (n: number) => void; style?: object; width?: number; placeholder?: string }) {
-  const [text, setText] = useState(value ? String(value) : '');
+/**
+ * Numeric input that keeps a local text buffer so users can type "72." etc.
+ * 0 shows as empty unless `showZero` (a 0 the user actually typed); `onChange` also reports whether the box is empty.
+ */
+export function NumInput({ value, onChange, style, width = 64, placeholder = '0', showZero }: {
+  value: number; onChange: (n: number, empty: boolean) => void; style?: object; width?: number; placeholder?: string; showZero?: boolean;
+}) {
+  const fmt = (v: number) => (v || showZero ? String(v) : '');
+  const [text, setText] = useState(fmt(value));
   useEffect(() => {
     // Sync from outside (e.g. "copy to all sets") without clobbering "72." mid-typing.
-    if ((parseFloat(text.replace(',', '.')) || 0) !== value) setText(value ? String(value) : '');
+    if ((parseFloat(text.replace(',', '.')) || 0) !== value) setText(fmt(value));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
   return (
@@ -86,7 +92,7 @@ export function NumInput({ value, onChange, style, width = 64, placeholder = '0'
       selectTextOnFocus
       onChangeText={(t) => {
         setText(t);
-        onChange(parseFloat(t.replace(',', '.')) || 0);
+        onChange(parseFloat(t.replace(',', '.')) || 0, t.trim() === '');
       }}
       style={[s.num, { width }, style]}
     />

@@ -28,6 +28,9 @@ export interface SetLog {
   weight: number;
   reps: number;
   done: boolean;
+  /** While logging: the user typed this field (so a typed 0 isn't replaced by last time's value). */
+  weightEntered?: boolean;
+  repsEntered?: boolean;
 }
 
 export interface SessionEntry {

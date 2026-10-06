@@ -59,9 +59,13 @@ export default function Workout() {
     const nowDone = !set.done;
     const patch: Partial<SetLog> = { done: nowDone };
     if (nowDone) {
-      if (!set.weight && prev) patch.weight = prev.weight;
-      if (!set.reps && prev) patch.reps = prev.reps;
+      // Only boxes left empty take last time's value; a typed 0 (e.g. bodyweight) is kept.
+      if (!set.weightEntered && !set.weight && prev) patch.weight = prev.weight;
+      if (!set.repsEntered && !set.reps && prev) patch.reps = prev.reps;
       if (!(patch.reps ?? set.reps)) return; // nothing to log yet
+      // Filled-in values stay visible if the set is unticked again.
+      patch.weightEntered = true;
+      patch.repsEntered = true;
     }
     updateSet(ei, si, patch);
     if (nowDone) {
@@ -175,8 +179,8 @@ export default function Workout() {
                         <Text style={{ color: C.faint, fontSize: 13 }}>–</Text>
                       )}
                     </View>
-                    <NumInput width={72} value={set.weight} placeholder={prev ? String(prev.weight) : '–'} onChange={(n) => updateSet(ei, si, { weight: n })} />
-                    <NumInput width={56} value={set.reps} placeholder={prev ? String(prev.reps) : '–'} onChange={(n) => updateSet(ei, si, { reps: Math.round(n) })} />
+                    <NumInput width={72} value={set.weight} showZero={set.weightEntered} placeholder={prev ? String(prev.weight) : '–'} onChange={(n, empty) => updateSet(ei, si, { weight: n, weightEntered: !empty })} />
+                    <NumInput width={56} value={set.reps} showZero={set.repsEntered} placeholder={prev ? String(prev.reps) : '–'} onChange={(n, empty) => updateSet(ei, si, { reps: Math.round(n), repsEntered: !empty })} />
                     <Pressable
                       onPress={() => toggleDone(ei, si, prev)}
                       hitSlop={8}
