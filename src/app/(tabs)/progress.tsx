@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { Card, Chip, Empty, Row, Screen, Section, s } from '@/components/ui';
 import { MUSCLE_GROUPS, muscleGroup, norm } from '@/lib/defaults';
@@ -8,12 +8,24 @@ import { exerciseHistory } from '@/lib/stats';
 import { actions, useStore } from '@/lib/store';
 import { C } from '@/lib/theme';
 
+const PERIODS = [
+  { label: 'Week', days: 7 },
+  { label: 'Month', days: 30 },
+  { label: '3 months', days: 91 },
+  { label: 'Year', days: 365 },
+  { label: 'All time', days: Infinity },
+];
+
 export default function Progress() {
   const sessions = useStore((st) => st.sessions);
   const days = useStore((st) => st.days);
   const units = useStore((st) => st.profile.units);
   const groupBy = useStore((st) => st.profile.progressGroup);
-  const hist = useMemo(() => [...exerciseHistory(sessions).values()].sort((a, b) => b.points.length - a.points.length), [sessions]);
+  const [period, setPeriod] = useState(PERIODS[0]);
+  const since = useMemo(() => Date.now() - period.days * 864e5, [period]);
+  const all = useMemo(() => [...exerciseHistory(sessions).values()].sort((a, b) => b.points.length - a.points.length), [sessions]);
+  // Only exercises logged within the selected period are listed.
+  const hist = useMemo(() => all.filter((h) => h.points.some((p) => new Date(p.date).getTime() >= since)), [all, since]);
 
   const groups = useMemo(() => {
     const byGroup = new Map<string, typeof hist>();
@@ -36,14 +48,20 @@ export default function Progress() {
     return [...byGroup].sort(([a], [b]) => rank(a) - rank(b));
   }, [hist, days, sessions, groupBy]);
 
-  const weekStart = Date.now() - 7 * 864e5;
-  const weekVol = sessions.filter((x) => new Date(x.startedAt).getTime() > weekStart).reduce((t, x) => t + x.entries.reduce((a, e) => a + e.sets.filter((z) => z.done).reduce((b, z) => b + z.weight * z.reps, 0), 0), 0);
+  const stats = useMemo(() => {
+    const inPeriod = sessions.filter((x) => x.finishedAt && new Date(x.startedAt).getTime() >= since);
+    const exercises = new Set(inPeriod.flatMap((x) => x.entries.filter((e) => e.sets.some((z) => z.done)).map((e) => norm(e.name))));
+    return { workouts: inPeriod.length, exercises: exercises.size };
+  }, [sessions, since]);
 
   return (
     <Screen title="Progress">
+      <Row style={{ gap: 6, marginBottom: 10 }}>
+        {PERIODS.map((p) => <Chip key={p.label} label={p.label} active={period === p} onPress={() => setPeriod(p)} />)}
+      </Row>
       <Row style={{ flexWrap: 'nowrap', gap: 10 }}>
-        <Stat label="Workouts" value={String(sessions.length)} />
-        <Stat label="Exercises" value={String(hist.length)} />
+        <Stat label="Workouts" value={String(stats.workouts)} />
+        <Stat label="Exercises" value={String(stats.exercises)} />
       </Row>
 
       <Section
@@ -55,7 +73,7 @@ export default function Progress() {
           </Row>
         }
       />
-      {hist.length === 0 ? <Empty text="Finish a workout and your lifts will show up here." /> : null}
+      {hist.length === 0 ? <Empty text={all.length ? `No exercises logged in the selected period.` : 'Finish a workout and your lifts will show up here.'} /> : null}
       {groups.map(([group, items]) => (
         <View key={group}>
           <Text style={[s.muted, { fontWeight: '700', marginTop: 6, marginBottom: 8 }]}>{group}</Text>
