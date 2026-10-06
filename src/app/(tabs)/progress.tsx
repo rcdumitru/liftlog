@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { Card, Chip, Empty, Row, Screen, Section, s } from '@/components/ui';
 import { MUSCLE_GROUPS, muscleGroup, norm } from '@/lib/defaults';
 import { exerciseHistory } from '@/lib/stats';
@@ -24,8 +24,11 @@ export default function Progress() {
   const [period, setPeriod] = useState(PERIODS[0]);
   const since = useMemo(() => Date.now() - period.days * 864e5, [period]);
   const all = useMemo(() => [...exerciseHistory(sessions).values()].sort((a, b) => b.points.length - a.points.length), [sessions]);
-  // Only exercises logged within the selected period are listed.
-  const hist = useMemo(() => all.filter((h) => h.points.some((p) => new Date(p.date).getTime() >= since)), [all, since]);
+  const [query, setQuery] = useState('');
+  const q = norm(query);
+  const matches = useMemo(() => (q ? all.filter((h) => norm(h.name).includes(q)) : all), [all, q]);
+  // Only exercises logged within the selected period (and matching the search) are listed.
+  const hist = useMemo(() => matches.filter((h) => h.points.some((p) => new Date(p.date).getTime() >= since)), [matches, since]);
 
   const groups = useMemo(() => {
     const byGroup = new Map<string, typeof hist>();
@@ -73,7 +76,38 @@ export default function Progress() {
           </Row>
         }
       />
-      {hist.length === 0 ? <Empty text={all.length ? `No exercises logged in the selected period.` : 'Finish a workout and your lifts will show up here.'} /> : null}
+      {all.length ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.card, borderColor: C.border, borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, marginBottom: 12 }}>
+          <Ionicons name="search" size={16} color={C.faint} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search exercises"
+            placeholderTextColor={C.faint}
+            autoCorrect={false}
+            autoCapitalize="none"
+            returnKeyType="search"
+            style={{ flex: 1, color: C.text, fontSize: 15, paddingVertical: 10 }}
+          />
+          {query ? (
+            <Pressable onPress={() => setQuery('')} hitSlop={10} accessibilityLabel="Clear search">
+              <Ionicons name="close-circle" size={18} color={C.faint} />
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+      {hist.length === 0 ? (
+        !all.length ? (
+          <Empty text="Finish a workout and your lifts will show up here." />
+        ) : matches.length ? (
+          <View style={{ alignItems: 'center' }}>
+            <Empty text={q ? `No matches logged in the selected period.` : 'No exercises logged in the selected period.'} />
+            <Chip label={`Show all time (${matches.length})`} onPress={() => setPeriod(PERIODS[PERIODS.length - 1])} />
+          </View>
+        ) : (
+          <Empty text={`No exercises match “${query.trim()}”.`} />
+        )
+      ) : null}
       {groups.map(([group, items]) => (
         <View key={group}>
           <Text style={[s.muted, { fontWeight: '700', marginTop: 6, marginBottom: 8 }]}>{group}</Text>

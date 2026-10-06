@@ -82,7 +82,7 @@ export default function ExerciseDetail() {
               <Text style={{ color: C.faint, fontSize: 11 }}>{new Date(pts[pts.length - 1].date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</Text>
             </Row>
           </Card>
-          <Text style={[s.muted, { marginTop: 4 }]}>Heaviest set ever: {pr} {units}</Text>
+          <Text style={[s.muted, { marginTop: 4 }]}>All-time heaviest set: {pr} {units}</Text>
 
           <Section title="History" />
           {[...data.points].reverse().map((p, i) => (

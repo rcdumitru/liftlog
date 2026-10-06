@@ -116,6 +116,10 @@ export const actions = {
   deleteSession(id: string) {
     setState((s) => ({ sessions: s.sessions.filter((x) => x.id !== id) }));
   },
+  /** Deletes logged workouts only; days, settings and an in-progress workout are kept. */
+  clearHistory() {
+    setState({ sessions: [] });
+  },
   resetAll() {
     setState({ days: seedDays(), sessions: [], active: null });
   },
