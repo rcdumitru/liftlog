@@ -3,6 +3,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatRest } from '@/lib/defaults';
+import { cancelRestDone, scheduleRestDone } from '@/lib/notify';
 import { C } from '@/lib/theme';
 
 type Timer = { endAt: number; total: number; label: string } | null;
@@ -13,14 +14,30 @@ const set = (t: Timer) => {
   subs.forEach((f) => f());
 };
 
+/** Set when a rest finishes, so the bar can show "next set" for a few seconds. */
+let finished: { label: string } | null = null;
+
 export const restTimer = {
   start(seconds: number, label: string) {
+    finished = null;
     set({ endAt: Date.now() + seconds * 1000, total: seconds, label });
+    scheduleRestDone(timer!.endAt, label);
   },
   add(seconds: number) {
-    if (timer) set({ ...timer, endAt: timer.endAt + seconds * 1000, total: timer.total + seconds });
+    if (!timer) return;
+    set({ ...timer, endAt: timer.endAt + seconds * 1000, total: timer.total + seconds });
+    scheduleRestDone(timer.endAt, timer.label);
   },
+  /** Skip / cancel: no notification and no popup. */
   stop() {
+    finished = null;
+    cancelRestDone();
+    set(null);
+  },
+  /** Ran out: the scheduled notification covers the background case; show the popup here. */
+  finish() {
+    if (!timer) return;
+    finished = { label: timer.label };
     set(null);
   },
 };
@@ -37,7 +54,20 @@ function buzz() {
 export function RestTimerBar() {
   const t = useSyncExternalStore((f) => (subs.add(f), () => subs.delete(f)), () => timer, () => timer);
   const [now, setNow] = useState(Date.now());
+  const [done, setDone] = useState<{ label: string } | null>(null);
   const insets = useSafeAreaInsets();
+
+  // Show the "next set" popup for a few seconds after a rest runs out.
+  useEffect(() => {
+    if (t || !finished) return;
+    setDone(finished);
+    finished = null;
+    const id = setTimeout(() => setDone(null), 5000);
+    return () => clearTimeout(id);
+  }, [t]);
+  useEffect(() => {
+    if (t) setDone(null);
+  }, [t]);
 
   useEffect(() => {
     if (!t) return;
@@ -46,13 +76,27 @@ export function RestTimerBar() {
       setNow(n);
       if (n >= t.endAt) {
         buzz();
-        restTimer.stop();
+        restTimer.finish();
       }
     }, 250);
     return () => clearInterval(id);
   }, [t]);
 
-  if (!t) return null;
+  if (!t) {
+    if (!done) return null;
+    return (
+      <View style={[st.wrap, { bottom: insets.bottom + 12 }]} pointerEvents="box-none">
+        <Pressable onPress={() => setDone(null)} style={[st.bar, { borderColor: C.accent }]}>
+          <View style={[st.fill, { width: '100%' }]} />
+          <View style={{ flex: 1 }}>
+            <Text style={st.small}>REST OVER · {done.label}</Text>
+            <Text style={[st.time, { fontSize: 22 }]}>Start your next set 💪</Text>
+          </View>
+          <View style={[st.btn, { backgroundColor: C.accent }]}><Text style={[st.btnText, { color: C.accentInk }]}>OK</Text></View>
+        </Pressable>
+      </View>
+    );
+  }
   const left = Math.max(0, Math.ceil((t.endAt - now) / 1000));
   const pct = Math.min(1, 1 - left / t.total);
 

@@ -31,6 +31,7 @@ export default function RootLayout() {
             <Stack.Screen name="workout/[dayId]" options={{ title: 'Workout' }} />
             <Stack.Screen name="day/[id]" options={{ title: 'Edit day' }} />
             <Stack.Screen name="exercise/[name]" options={{ title: 'Progress' }} />
+            <Stack.Screen name="session/[id]" options={{ title: 'Workout' }} />
           </Stack>
           <RestTimerBar />
         </View>

@@ -82,7 +82,7 @@ export default function Train() {
             const vol = x.entries.reduce((t, e) => t + e.sets.filter((z) => z.done).reduce((a, z) => a + z.weight * z.reps, 0), 0);
             const sets = x.entries.reduce((t, e) => t + e.sets.filter((z) => z.done).length, 0);
             return (
-              <Card key={x.id} style={{ paddingVertical: 12 }}>
+              <Card key={x.id} style={{ paddingVertical: 12 }} onPress={() => router.push(`/session/${x.id}`)}>
                 <Row style={{ flexWrap: 'nowrap' }}>
                   <Text style={[s.body, { flex: 1, fontWeight: '600' }]}>{x.dayName}</Text>
                   <View style={{ alignItems: 'flex-end' }}>
