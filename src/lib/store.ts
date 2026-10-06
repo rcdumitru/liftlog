@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_PROFILE, seedDays, uid } from './defaults';
+import { setThemePrefs } from './theme';
 import type { Profile, Session, WorkoutDay } from './types';
 
 export interface State {
@@ -65,6 +66,7 @@ export async function hydrate() {
   } catch {
     state = { ...state, days: seedDays(), hydrated: true };
   }
+  setThemePrefs(state.profile.themeMode, state.profile.accent);
   listeners.forEach((l) => l());
 }
 
@@ -73,6 +75,7 @@ export async function hydrate() {
 export const actions = {
   updateProfile(p: Partial<Profile>) {
     setState((s) => ({ profile: { ...s.profile, ...p } }));
+    setThemePrefs(state.profile.themeMode, state.profile.accent);
   },
   saveDay(day: WorkoutDay) {
     setState((s) => ({

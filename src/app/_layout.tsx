@@ -5,9 +5,10 @@ import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RestTimerBar } from '@/components/RestTimer';
 import { hydrate, useStore } from '@/lib/store';
-import { C } from '@/lib/theme';
+import { C, isDark, useTheme } from '@/lib/theme';
 
 export default function RootLayout() {
+  useTheme();
   const hydrated = useStore((s) => s.hydrated);
   useEffect(() => {
     hydrate();
@@ -15,7 +16,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style={isDark() ? 'light' : 'dark'} />
       {hydrated ? (
         <View style={{ flex: 1, backgroundColor: C.bg }}>
           <Stack

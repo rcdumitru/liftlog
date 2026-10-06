@@ -9,10 +9,11 @@ import { Button, Card, Empty, NumInput, Row, Screen, s } from '@/components/ui';
 import { confirm } from '@/lib/confirm';
 import { formatRest, lastPerformance, suggestNext } from '@/lib/defaults';
 import { actions, getState, useStore } from '@/lib/store';
-import { C } from '@/lib/theme';
+import { C, useTheme } from '@/lib/theme';
 import type { SetLog } from '@/lib/types';
 
 export default function Workout() {
+  useTheme();
   const { dayId } = useLocalSearchParams<{ dayId: string }>();
   const day = useStore((st) => st.days.find((d) => d.id === dayId));
   const active = useStore((st) => st.active);
@@ -152,13 +153,12 @@ export default function Workout() {
                 </Row>
               ) : null}
               {showSuggestions && sug ? <Text style={{ color: C.accent, fontSize: 13, marginTop: 8 }}>{sug.reason}</Text> : null}
-              {ex?.notes ? <Text style={[s.muted, { fontSize: 13, marginTop: 4, fontStyle: 'italic' }]}>{ex.notes}</Text> : null}
 
               <Row style={{ marginTop: 12, marginBottom: 4, flexWrap: 'nowrap' }}>
-                <Text style={[hdr, { width: 26 }]}>SET</Text>
-                <Text style={[hdr, { flex: 1 }]}>PREVIOUS</Text>
-                <Text style={[hdr, { width: 72, textAlign: 'center' }]}>{units.toUpperCase()}</Text>
-                <Text style={[hdr, { width: 56, textAlign: 'center' }]}>REPS</Text>
+                <Text style={[hdr(), { width: 26 }]}>SET</Text>
+                <Text style={[hdr(), { flex: 1 }]}>PREVIOUS</Text>
+                <Text style={[hdr(), { width: 72, textAlign: 'center' }]}>{units.toUpperCase()}</Text>
+                <Text style={[hdr(), { width: 56, textAlign: 'center' }]}>REPS</Text>
                 <View style={{ width: 44 }} />
               </Row>
               {entry.sets.map((set, si) => {
@@ -204,7 +204,7 @@ export default function Workout() {
   );
 }
 
-const hdr = { color: C.faint, fontSize: 11, fontWeight: '700' as const, letterSpacing: 1 };
+const hdr = () => ({ color: C.faint, fontSize: 11, fontWeight: '700' as const, letterSpacing: 1 });
 
 function Tag({ icon, text, onPress, editing }: { icon: keyof typeof Ionicons.glyphMap; text: string; onPress?: () => void; editing?: boolean }) {
   return (

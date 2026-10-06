@@ -4,9 +4,10 @@ import { Pressable, Text, View } from 'react-native';
 import { Button, Card, Empty, Row, Screen, Section, s } from '@/components/ui';
 import { formatDate, formatDuration, formatRest, uid } from '@/lib/defaults';
 import { useStore } from '@/lib/store';
-import { C } from '@/lib/theme';
+import { C, useTheme } from '@/lib/theme';
 
 export default function Train() {
+  useTheme();
   const days = useStore((st) => st.days);
   const sessions = useStore((st) => st.sessions);
   const active = useStore((st) => st.active);

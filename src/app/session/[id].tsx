@@ -6,9 +6,10 @@ import { Button, Card, Empty, Row, Screen, s } from '@/components/ui';
 import { confirm } from '@/lib/confirm';
 import { formatDate, formatDuration } from '@/lib/defaults';
 import { actions, useStore } from '@/lib/store';
-import { C } from '@/lib/theme';
+import { C, useTheme } from '@/lib/theme';
 
 export default function SessionDetail() {
+  useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const session = useStore((st) => st.sessions.find((x) => x.id === id));
   const units = useStore((st) => st.profile.units);

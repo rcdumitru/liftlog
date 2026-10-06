@@ -7,12 +7,13 @@ import { Button, Card, Chip, Field, NumInput, Row, Screen, Section, s } from '@/
 import { confirm } from '@/lib/confirm';
 import { applyPreset, formatRest, GOAL_PRESETS, uid } from '@/lib/defaults';
 import { actions, useStore } from '@/lib/store';
-import { C } from '@/lib/theme';
+import { C, useTheme } from '@/lib/theme';
 import type { Exercise, ExerciseKind, Goal, WorkoutDay } from '@/lib/types';
 
 const KINDS: ExerciseKind[] = ['compound', 'isolation', 'bodyweight', 'cardio'];
 
 export default function EditDay() {
+  useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const existing = useStore((st) => st.days.find((d) => d.id === id));
   const goal = useStore((st) => st.profile.goal);

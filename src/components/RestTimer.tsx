@@ -4,7 +4,7 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatRest } from '@/lib/defaults';
 import { cancelRestDone, scheduleRestDone } from '@/lib/notify';
-import { C } from '@/lib/theme';
+import { C, onThemeChange, useTheme } from '@/lib/theme';
 
 type Timer = { endAt: number; total: number; label: string } | null;
 let timer: Timer = null;
@@ -52,6 +52,7 @@ function buzz() {
 
 /** Floating countdown bar shown above the tab bar / at the bottom of the workout screen. */
 export function RestTimerBar() {
+  useTheme();
   const t = useSyncExternalStore((f) => (subs.add(f), () => subs.delete(f)), () => timer, () => timer);
   const [now, setNow] = useState(Date.now());
   const [done, setDone] = useState<{ label: string } | null>(null);
@@ -116,16 +117,19 @@ export function RestTimerBar() {
   );
 }
 
-const st = StyleSheet.create({
+const makeStyles = () => StyleSheet.create({
   wrap: { position: 'absolute', left: 12, right: 12, alignItems: 'center' },
   bar: {
     width: '100%', maxWidth: 696, flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, paddingLeft: 16,
     backgroundColor: C.cardHi, borderRadius: 20, borderWidth: 1, borderColor: C.border, overflow: 'hidden',
     shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 16, elevation: 8,
   },
-  fill: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: 'rgba(198,244,50,0.12)' },
+  fill: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: C.accentSoft },
   small: { color: C.sub, fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   time: { color: C.text, fontSize: 28, fontWeight: '800', fontVariant: ['tabular-nums'] },
   btn: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, backgroundColor: C.card, borderWidth: 1, borderColor: C.border },
   btnText: { color: C.text, fontWeight: '700' },
 });
+
+const st = makeStyles();
+onThemeChange(() => Object.assign(st, makeStyles()));

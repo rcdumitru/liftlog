@@ -1,3 +1,5 @@
+import type { AccentKey, ThemeMode } from './theme';
+
 export type Goal = 'strength' | 'hypertrophy' | 'endurance' | 'general';
 export type Units = 'kg' | 'lb';
 export type ExerciseKind = 'compound' | 'isolation' | 'bodyweight' | 'cardio';
@@ -13,7 +15,6 @@ export interface Exercise {
   restSec: number;
   /** Weight increment to add once all sets hit repsMax. */
   increment: number;
-  notes?: string;
 }
 
 export interface WorkoutDay {
@@ -47,10 +48,11 @@ export interface Session {
 
 export interface Profile {
   units: Units;
-  bodyweight: number;
   goal: Goal;
   /** Show the next-weight hint above each exercise's sets during a workout. */
   showSuggestions: boolean;
   /** How the Progress tab groups exercises. */
   progressGroup: 'day' | 'muscle';
+  themeMode: ThemeMode;
+  accent: AccentKey;
 }

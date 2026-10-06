@@ -7,12 +7,13 @@ import { Card, Chip, Empty, Row, Screen, Section, s } from '@/components/ui';
 import { formatDate, norm, PERIODS } from '@/lib/defaults';
 import { exerciseHistory } from '@/lib/stats';
 import { useStore } from '@/lib/store';
-import { C } from '@/lib/theme';
+import { C, useTheme } from '@/lib/theme';
 
 type Metric = 'topWeight' | 'volume';
 const LABEL: Record<Metric, string> = { topWeight: 'Top weight', volume: 'Volume' };
 
 export default function ExerciseDetail() {
+  useTheme();
   const { name } = useLocalSearchParams<{ name: string }>();
   const sessions = useStore((st) => st.sessions);
   const units = useStore((st) => st.profile.units);

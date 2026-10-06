@@ -84,10 +84,11 @@ export function seedDays(): WorkoutDay[] {
 
 export const DEFAULT_PROFILE: Profile = {
   units: 'kg',
-  bodyweight: 80,
   goal: 'hypertrophy',
   showSuggestions: true,
   progressGroup: 'day',
+  themeMode: 'dark',
+  accent: 'lime',
 };
 
 export const norm = (name: string) => name.trim().toLowerCase();

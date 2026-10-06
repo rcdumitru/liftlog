@@ -62,7 +62,7 @@ function logExercise(e: Template, id: string, lifter: Lifter): SessionEntry {
  * (with the odd week off), mostly rotating through `days`, exercises sometimes skipped or
  * added, and each exercise progressing at its own pace with stalls and deloads.
  */
-export function generateSampleSessions(days: WorkoutDay[], weeks = 52): Session[] {
+function generateSampleSessions(days: WorkoutDay[], weeks = 52): Session[] {
   const out: Session[] = [];
   if (!days.length) return out;
   const lifters: Record<string, Lifter> = {};

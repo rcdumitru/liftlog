@@ -6,9 +6,10 @@ import { Card, Chip, Empty, Row, Screen, Section, s } from '@/components/ui';
 import { MUSCLE_GROUPS, muscleGroup, norm, PERIODS } from '@/lib/defaults';
 import { exerciseHistory } from '@/lib/stats';
 import { actions, useStore } from '@/lib/store';
-import { C } from '@/lib/theme';
+import { C, useTheme } from '@/lib/theme';
 
 export default function Progress() {
+  useTheme();
   const sessions = useStore((st) => st.sessions);
   const days = useStore((st) => st.days);
   const units = useStore((st) => st.profile.units);
@@ -64,7 +65,7 @@ export default function Progress() {
         right={
           <Row style={{ gap: 6 }}>
             <Chip label="By day" active={groupBy === 'day'} onPress={() => actions.updateProfile({ progressGroup: 'day' })} />
-            <Chip label="By muscle" active={groupBy === 'muscle'} onPress={() => actions.updateProfile({ progressGroup: 'muscle' })} />
+            <Chip label="By group" active={groupBy === 'muscle'} onPress={() => actions.updateProfile({ progressGroup: 'muscle' })} />
           </Row>
         }
       />
