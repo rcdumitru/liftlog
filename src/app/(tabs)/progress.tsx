@@ -3,18 +3,10 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { Card, Chip, Empty, Row, Screen, Section, s } from '@/components/ui';
-import { MUSCLE_GROUPS, muscleGroup, norm } from '@/lib/defaults';
+import { MUSCLE_GROUPS, muscleGroup, norm, PERIODS } from '@/lib/defaults';
 import { exerciseHistory } from '@/lib/stats';
 import { actions, useStore } from '@/lib/store';
 import { C } from '@/lib/theme';
-
-const PERIODS = [
-  { label: 'Week', days: 7 },
-  { label: 'Month', days: 30 },
-  { label: '3 months', days: 91 },
-  { label: 'Year', days: 365 },
-  { label: 'All time', days: Infinity },
-];
 
 export default function Progress() {
   const sessions = useStore((st) => st.sessions);
@@ -111,7 +103,9 @@ export default function Progress() {
       {groups.map(([group, items]) => (
         <View key={group}>
           <Text style={[s.muted, { fontWeight: '700', marginTop: 6, marginBottom: 8 }]}>{group}</Text>
-          {items.map(({ name, points }) => {
+          {items.map(({ name, points: allPoints }) => {
+            // Trend, session count and sparkline cover the selected period only.
+            const points = allPoints.filter((p) => new Date(p.date).getTime() >= since);
             const last = points[points.length - 1];
             const first = points[0];
             const delta = last.topWeight - first.topWeight;
@@ -136,7 +130,7 @@ export default function Progress() {
                   <Row style={{ marginTop: 6, gap: 4 }}>
                     <Ionicons name={delta > 0 ? 'arrow-up' : delta < 0 ? 'arrow-down' : 'remove'} size={14} color={delta > 0 ? C.good : delta < 0 ? C.danger : C.sub} />
                     <Text style={{ color: delta > 0 ? C.good : delta < 0 ? C.danger : C.sub, fontSize: 13, fontWeight: '600' }}>
-                      {delta > 0 ? '+' : ''}{delta} {units} over {points.length} sessions
+                      {delta > 0 ? '+' : ''}{Math.round(delta * 100) / 100} {units} over {points.length} sessions
                     </Text>
                   </Row>
                 ) : null}

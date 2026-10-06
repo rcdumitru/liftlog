@@ -1,9 +1,10 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams } from 'expo-router';
 import { Stack } from 'expo-router/stack';
 import { useMemo, useState } from 'react';
 import { Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { Card, Chip, Empty, Row, Screen, Section, s } from '@/components/ui';
-import { norm } from '@/lib/defaults';
+import { formatDate, norm, PERIODS } from '@/lib/defaults';
 import { exerciseHistory } from '@/lib/stats';
 import { useStore } from '@/lib/store';
 import { C } from '@/lib/theme';
@@ -18,6 +19,8 @@ export default function ExerciseDetail() {
   const [metric, setMetric] = useState<Metric>('topWeight');
   /** Bar under the pointer (web) or last tapped (touch). */
   const [sel, setSel] = useState<number | null>(null);
+  const [newestFirst, setNewestFirst] = useState(true);
+  const [period, setPeriod] = useState(PERIODS[PERIODS.length - 1]);
   const { height } = useWindowDimensions();
   const data = useMemo(() => exerciseHistory(sessions).get(norm(decodeURIComponent(name ?? ''))), [sessions, name]);
 
@@ -30,6 +33,8 @@ export default function ExerciseDetail() {
   const min = Math.min(...vals);
   const floor = Math.max(0, min - (max - min) * 0.5);
   const pr = Math.max(...data.points.map((p) => p.topWeight));
+  const since = Date.now() - period.days * 864e5;
+  const history = data.points.filter((p) => new Date(p.date).getTime() >= since);
 
   return (
     <>
@@ -78,17 +83,32 @@ export default function ExerciseDetail() {
               })}
             </View>
             <Row style={{ justifyContent: 'space-between', marginTop: 6 }}>
-              <Text style={{ color: C.faint, fontSize: 11 }}>{new Date(pts[0].date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</Text>
-              <Text style={{ color: C.faint, fontSize: 11 }}>{new Date(pts[pts.length - 1].date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</Text>
+              <Text style={{ color: C.faint, fontSize: 11 }}>{formatDate(pts[0].date)}</Text>
+              <Text style={{ color: C.faint, fontSize: 11 }}>{formatDate(pts[pts.length - 1].date)}</Text>
             </Row>
           </Card>
           <Text style={[s.muted, { marginTop: 4 }]}>All-time heaviest set: {pr} {units}</Text>
 
-          <Section title="History" />
-          {[...data.points].reverse().map((p, i) => (
+          <Section
+            title="History"
+            right={
+              <Pressable onPress={() => setNewestFirst((v) => !v)} hitSlop={10} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Ionicons name="swap-vertical" size={15} color={C.accent} />
+                <Text style={{ color: C.accent, fontWeight: '700' }}>{newestFirst ? 'Newest first' : 'Oldest first'}</Text>
+              </Pressable>
+            }
+          />
+          <Row style={{ gap: 6, marginBottom: 10 }}>
+            {PERIODS.map((pd) => <Chip key={pd.label} label={pd.label} active={period === pd} onPress={() => setPeriod(pd)} />)}
+          </Row>
+          {history.length === 0 ? <Empty text="No sessions in this period." /> : null}
+          {(newestFirst ? [...history].reverse() : history).map((p, i) => (
             <Card key={i} style={{ paddingVertical: 12 }}>
               <Row style={{ flexWrap: 'nowrap' }}>
-                <Text style={[s.body, { fontWeight: '600', width: 90 }]}>{new Date(p.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</Text>
+                <View style={{ width: 90 }}>
+                  <Text style={[s.body, { fontWeight: '600' }]}>{new Date(p.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</Text>
+                  {new Date(p.date).getFullYear() !== new Date().getFullYear() ? <Text style={[s.muted, { fontSize: 12 }]}>{new Date(p.date).getFullYear()}</Text> : null}
+                </View>
                 <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
                   {p.sets.map((x, j) => (
                     <View key={j} style={{ backgroundColor: 'rgba(128,128,128,0.25)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>

@@ -153,3 +153,19 @@ export const formatDuration = (ms: number) => {
   const h = Math.floor(mins / 60);
   return h ? `${h}h ${String(mins % 60).padStart(2, '0')}m` : `${mins} min`;
 };
+
+/** "12 Oct", or "12 Oct 2025" when it isn't this year. */
+export const formatDate = (iso: string, extra: Intl.DateTimeFormatOptions = {}) => {
+  const d = new Date(iso);
+  const year = d.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' as const };
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', ...year, ...extra });
+};
+
+/** Look-back windows used by the Progress tab and exercise history. */
+export const PERIODS = [
+  { label: 'Week', days: 7 },
+  { label: 'Month', days: 30 },
+  { label: '3 months', days: 91 },
+  { label: 'Year', days: 365 },
+  { label: 'All time', days: Infinity },
+];

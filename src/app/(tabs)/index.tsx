@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { Button, Card, Empty, Row, Screen, Section, s } from '@/components/ui';
-import { formatDuration, formatRest, uid } from '@/lib/defaults';
+import { formatDate, formatDuration, formatRest, uid } from '@/lib/defaults';
 import { useStore } from '@/lib/store';
 import { C } from '@/lib/theme';
 
@@ -62,7 +62,7 @@ export default function Train() {
             </View>
             <Row style={{ flexWrap: 'nowrap' }}>
               <Text style={[s.muted, { flex: 1, fontSize: 13 }]}>
-                ~{mins} min{last ? ` · last ${new Date(last.startedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}` : ''}
+                ~{mins} min{last ? ` · last ${formatDate(last.startedAt)}` : ''}
               </Text>
               <Button
                 small
@@ -86,7 +86,7 @@ export default function Train() {
                 <Row style={{ flexWrap: 'nowrap' }}>
                   <Text style={[s.body, { flex: 1, fontWeight: '600' }]}>{x.dayName}</Text>
                   <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={s.muted}>{new Date(x.startedAt).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</Text>
+                    <Text style={s.muted}>{formatDate(x.startedAt, { weekday: 'short' })}</Text>
                     {x.finishedAt ? <Text style={[s.muted, { fontSize: 13 }]}>{formatDuration(new Date(x.finishedAt).getTime() - new Date(x.startedAt).getTime())}</Text> : null}
                   </View>
                 </Row>
