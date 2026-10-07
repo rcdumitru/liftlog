@@ -13,8 +13,10 @@ export interface Exercise {
   repsMin: number;
   repsMax: number;
   restSec: number;
-  /** Weight increment to add once all sets hit repsMax. */
+  /** Weight increment to add once all sets hit repsMax ("Increase by"). */
   increment: number;
+  /** Extra instructions, edited from the workout screen. */
+  notes?: string;
 }
 
 export interface WorkoutDay {

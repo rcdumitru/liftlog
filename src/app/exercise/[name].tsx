@@ -3,7 +3,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { Stack } from 'expo-router/stack';
 import { useMemo, useState } from 'react';
 import { Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
-import { Card, Chip, Empty, Row, Screen, Section, s } from '@/components/ui';
+import { Card, Chip, Empty, Row, Screen, Section, s, SetPill } from '@/components/ui';
 import { formatDate, norm, PERIODS } from '@/lib/defaults';
 import { exerciseHistory } from '@/lib/stats';
 import { useStore } from '@/lib/store';
@@ -112,9 +112,7 @@ export default function ExerciseDetail() {
                 </View>
                 <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
                   {p.sets.map((x, j) => (
-                    <View key={j} style={{ backgroundColor: 'rgba(128,128,128,0.25)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
-                      <Text style={s.muted}>{`${x.weight} ${units} × ${x.reps}`}</Text>
-                    </View>
+                    <SetPill key={j} weight={x.weight} reps={x.reps} units={units} />
                   ))}
                 </View>
               </Row>

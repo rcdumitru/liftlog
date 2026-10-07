@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
-import { Card, Chip, Empty, Row, Screen, Section, s } from '@/components/ui';
+import { Card, Chip, Empty, Row, Screen, Section, s, Stat } from '@/components/ui';
 import { MUSCLE_GROUPS, muscleGroup, norm, PERIODS } from '@/lib/defaults';
 import { exerciseHistory } from '@/lib/stats';
 import { actions, useStore } from '@/lib/store';
@@ -144,11 +144,3 @@ export default function Progress() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={{ flex: 1, backgroundColor: C.card, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: C.border }}>
-      <Text style={{ color: C.text, fontSize: 24, fontWeight: '800' }}>{value}</Text>
-      <Text style={{ color: C.sub, fontSize: 12 }}>{label}</Text>
-    </View>
-  );
-}

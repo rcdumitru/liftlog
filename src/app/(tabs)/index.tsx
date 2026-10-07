@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { RangeCalendar } from '@/components/RangeCalendar';
-import { Button, Card, Empty, Row, Screen, Section, s } from '@/components/ui';
+import { Button, Card, Empty, Row, Screen, Section, Sheet, s } from '@/components/ui';
 import { formatDate, formatDuration, formatRest, PERIODS, uid } from '@/lib/defaults';
+import { sessionTotals } from '@/lib/stats';
 import { useStore } from '@/lib/store';
 import type { Session } from '@/lib/types';
 import { C, useTheme } from '@/lib/theme';
@@ -173,8 +174,7 @@ export default function Train() {
 const PAGE = 20;
 
 function SessionTile({ session: x }: { session: Session }) {
-  const vol = x.entries.reduce((t, e) => t + e.sets.filter((z) => z.done).reduce((a, z) => a + z.weight * z.reps, 0), 0);
-  const sets = x.entries.reduce((t, e) => t + e.sets.filter((z) => z.done).length, 0);
+  const { sets, volume: vol } = sessionTotals(x);
   return (
     <Card style={{ paddingVertical: 12 }} onPress={() => router.push(`/session/${x.id}`)}>
       <Row style={{ flexWrap: 'nowrap' }}>
@@ -207,10 +207,7 @@ function PeriodPicker({ visible, onClose, onPick }: { visible: boolean; onClose:
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: 16 }}>
-        <Pressable onPress={() => {}} style={[s.card, { width: '100%', maxWidth: 400, maxHeight: '90%', alignSelf: 'center', padding: 0 }]}>
-          <ScrollView contentContainerStyle={{ padding: 20 }}>
+    <Sheet visible={visible} onClose={onClose} maxWidth={400}>
             <Text style={[s.h2, { marginBottom: 12 }]}>Show workouts from</Text>
             {PERIODS.filter((p) => p.days !== Infinity).map((p) => (
               <Pressable key={p.label} onPress={() => onPick(presetRange(p))} style={({ pressed }) => ({ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: C.border, opacity: pressed ? 0.6 : 1 })}>
@@ -232,9 +229,6 @@ function PeriodPicker({ visible, onClose, onPick }: { visible: boolean; onClose:
             ) : null}
             <Button kind={custom ? 'ghost' : 'primary'} label="Show all" onPress={() => onPick(presetRange(PERIODS[PERIODS.length - 1]))} style={{ marginTop: 12 }} />
             <Button kind="ghost" label="Cancel" onPress={onClose} style={{ marginTop: 8 }} />
-          </ScrollView>
-        </Pressable>
-      </Pressable>
-    </Modal>
+    </Sheet>
   );
 }

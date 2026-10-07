@@ -1,12 +1,17 @@
-import * as Notifications from 'expo-notifications';
+import { isRunningInExpoGo } from 'expo';
 import { Platform } from 'react-native';
 
 /**
  * System notification for when the rest timer ends while the app is in the background
  * (phone locked, another app open). In the foreground the in-app popup handles it,
- * so banners are suppressed there to avoid showing both. Not supported on web.
+ * so banners are suppressed there to avoid showing both.
+ *
+ * Not available on web, or in Expo Go on Android, where merely importing expo-notifications
+ * throws (SDK 53+). The package is therefore loaded lazily, only where it works; a development
+ * build gets notifications on Android.
  */
-const native = Platform.OS !== 'web';
+const native = Platform.OS !== 'web' && !(Platform.OS === 'android' && isRunningInExpoGo());
+const Notifications: typeof import('expo-notifications') = native ? require('expo-notifications') : (null as never);
 let ready: Promise<boolean> | null = null;
 let scheduled: string | null = null;
 /** Bumped on every schedule/cancel so a slow, outdated schedule call cancels itself. */

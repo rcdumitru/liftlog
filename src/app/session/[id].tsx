@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Stack } from 'expo-router/stack';
-import { Text, View } from 'react-native';
-import { Button, Card, Empty, Row, Screen, s } from '@/components/ui';
+import { Text } from 'react-native';
+import { Button, Card, Empty, Row, Screen, s, SetPill, Stat } from '@/components/ui';
 import { confirm } from '@/lib/confirm';
 import { formatDate, formatDuration } from '@/lib/defaults';
+import { sessionTotals } from '@/lib/stats';
 import { actions, useStore } from '@/lib/store';
 import { C, useTheme } from '@/lib/theme';
 
@@ -17,8 +18,7 @@ export default function SessionDetail() {
   if (!session) return <><Stack.Screen options={{ title: 'Workout' }} /><Screen><Empty text="This workout no longer exists." /></Screen></>;
 
   const entries = session.entries.map((e) => ({ ...e, sets: e.sets.filter((x) => x.done) })).filter((e) => e.sets.length);
-  const sets = entries.reduce((t, e) => t + e.sets.length, 0);
-  const volume = entries.reduce((t, e) => t + e.sets.reduce((a, x) => a + x.weight * x.reps, 0), 0);
+  const { sets, volume } = sessionTotals(session);
   const time = new Date(session.startedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
   return (
@@ -29,9 +29,9 @@ export default function SessionDetail() {
           {formatDate(session.startedAt, { weekday: 'long' })} · {time}
         </Text>
         <Row style={{ flexWrap: 'nowrap', gap: 10, marginBottom: 6 }}>
-          {session.finishedAt ? <Stat label="Duration" value={formatDuration(new Date(session.finishedAt).getTime() - new Date(session.startedAt).getTime())} /> : null}
-          <Stat label="Sets" value={String(sets)} />
-          <Stat label={`Volume (${units})`} value={Math.round(volume).toLocaleString()} />
+          {session.finishedAt ? <Stat size={20} label="Duration" value={formatDuration(new Date(session.finishedAt).getTime() - new Date(session.startedAt).getTime())} /> : null}
+          <Stat size={20} label="Sets" value={String(sets)} />
+          <Stat size={20} label={`Volume (${units})`} value={Math.round(volume).toLocaleString()} />
         </Row>
 
         {entries.map((e) => (
@@ -43,9 +43,7 @@ export default function SessionDetail() {
             {e.sets.map((x, i) => (
               <Row key={i} style={{ flexWrap: 'nowrap', paddingVertical: 3 }}>
                 <Text style={{ color: C.sub, width: 26, fontWeight: '700' }}>{i + 1}</Text>
-                <View style={{ backgroundColor: 'rgba(128,128,128,0.25)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
-                  <Text style={s.muted}>{`${x.weight} ${units} × ${x.reps}`}</Text>
-                </View>
+                <SetPill weight={x.weight} reps={x.reps} units={units} />
               </Row>
             ))}
           </Card>
@@ -67,11 +65,3 @@ export default function SessionDetail() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={{ flex: 1, backgroundColor: C.card, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: C.border }}>
-      <Text style={{ color: C.text, fontSize: 20, fontWeight: '800' }}>{value}</Text>
-      <Text style={{ color: C.sub, fontSize: 12 }}>{label}</Text>
-    </View>
-  );
-}

@@ -17,6 +17,7 @@ export default function EditDay() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const existing = useStore((st) => st.days.find((d) => d.id === id));
   const goal = useStore((st) => st.profile.goal);
+  const units = useStore((st) => st.profile.units);
   const isNew = !existing;
   const [day, setDay] = useState<WorkoutDay>(existing ?? { id: uid(), name: '', focus: '', exercises: [] });
   const [presetGoal, setPresetGoal] = useState<Goal>(goal);
@@ -81,8 +82,8 @@ export default function EditDay() {
               <Num label="Sets" value={e.sets} onChange={(n) => setEx(i, { sets: Math.max(1, Math.round(n)) })} />
               <Num label="Reps min" value={e.repsMin} onChange={(n) => setEx(i, { repsMin: Math.round(n) })} />
               <Num label="Reps max" value={e.repsMax} onChange={(n) => setEx(i, { repsMax: Math.round(n) })} />
-              <Num label={`Rest s (${formatRest(e.restSec)})`} value={e.restSec} onChange={(n) => setEx(i, { restSec: Math.round(n) })} width={80} />
-              <Num label="+ Load" value={e.increment} onChange={(n) => setEx(i, { increment: n })} />
+              <Num label={`Rest (s) [${formatRest(e.restSec)}]`} value={e.restSec} onChange={(n) => setEx(i, { restSec: Math.round(n) })} width={80} />
+              <Num label={`Increase by (${units})`} value={e.increment} onChange={(n) => setEx(i, { increment: n })} />
             </Row>
           </Card>
         ))}

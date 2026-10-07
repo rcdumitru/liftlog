@@ -1,6 +1,12 @@
 import { norm } from './defaults';
 import type { Session } from './types';
 
+/** Ticked sets and total volume (weight × reps) of one workout. */
+export function sessionTotals(session: Session) {
+  const done = session.entries.flatMap((e) => e.sets.filter((x) => x.done));
+  return { sets: done.length, volume: done.reduce((t, x) => t + x.weight * x.reps, 0) };
+}
+
 export interface ExercisePoint {
   date: string;
   topWeight: number;

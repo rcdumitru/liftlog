@@ -8,18 +8,20 @@ All data stays on the device. There are no accounts, no backend and no network r
 
 ### Train
 - **Workout days.** Push, Pull and Legs are included to start with. You can add, edit and delete days and reorder their exercises.
-- **Day editor.** Set each exercise's muscle group, type (compound, isolation, bodyweight or cardio), sets, rep range, rest and weight increment. Goal presets (Strength, Muscle, Endurance, General) fill in recommended sets, reps and rest.
-- **Recent workouts.** Shows the date and how long each workout took. Tap one to see every exercise and set, with duration, sets and volume, or to delete it.
+- **Day editor.** Set each exercise's muscle group, type (compound, isolation, bodyweight or cardio), sets, rep range, rest and how much to increase the weight by. Goal presets (Strength, Muscle, Endurance, General) fill in recommended sets, reps and rest.
+- **Recent workouts.** Shows your last 5 workouts with the date and how long each took. Tap one to see every exercise and set, with duration, sets and volume, or to delete it.
+- **Show more…** Pick the last week, month, 3 months or year, choose custom dates on a calendar, or show all. The workouts appear in a scrollable box five tiles tall that loads more as you scroll, with a **Top** button to jump back up.
 
 ### Logging a workout
 - **Tap a day to open it.** Each set shows what you did on that set last time, under **Previous**.
 - **Log what you actually did.** After each set, enter the weight and reps, then tick it. If you leave the fields empty, ticking logs the same as last time.
 - **Just looking doesn't count.** If you leave without ticking a set, nothing is saved. Once a set is ticked, the workout stays in progress until you finish or discard it.
-- **Adjust as you go.** Add or remove sets. Tap the sets × reps tag to change the rep range, which is saved to the day for next time.
-- **Next-weight suggestions** use double progression. If you hit the top of the rep range on every set, the app suggests adding the increment. If you miss most sets, it suggests dropping about 10%. You can turn this off in Settings.
+- **Adjust as you go.** Add or remove sets for this workout. Tap ✎ next to an exercise, or one of its tags, to edit its name, rep range, rest and increase-by amount. Changes are saved to the day for next time.
+- **Notes.** Tap the notes icon next to an exercise to add instructions, such as seat height or grip. They show under the exercise in every workout.
+- **Next-weight suggestions** use double progression. If you hit the top of the rep range on every set, the app suggests adding the increase-by amount. If you miss most sets, it suggests dropping about 10%. You can turn this off in Settings.
 - **Rest timer.** It starts when you tick a set, and has −15 s, +15 s and Skip buttons.
   - When the rest is over, a popup appears if the app is open.
-  - If the app is in the background, you get a notification instead (iOS and Android only).
+  - If the app is in the background, you get a notification instead. This works on iOS and Android, but not on web, and on Android only in a development or release build, not in Expo Go.
 - A **?** button explains the logging flow.
 
 ### Progress
@@ -79,20 +81,21 @@ Each device and browser keeps its own copy, and nothing is synced between them. 
 ```
 src/app/_layout.tsx            Root stack, theme-aware header, rest timer bar
 src/app/(tabs)/_layout.tsx     Tab bar: Train, Progress, Settings
-src/app/(tabs)/index.tsx       Train: days, in-progress workout, recent workouts
-src/app/(tabs)/progress.tsx    Period stats, search, exercises grouped by day or muscle
+src/app/(tabs)/index.tsx       Train: days, in-progress workout, recent workouts, Show more…
+src/app/(tabs)/progress.tsx    Period stats, search, exercises grouped by day or group
 src/app/(tabs)/settings.tsx    Units, goal, appearance, suggestions, data, developer tools
-src/app/workout/[dayId].tsx    Logging a workout: previous sets, rep range editing, help sheet
+src/app/workout/[dayId].tsx    Logging a workout: previous sets, exercise editing, notes, help
 src/app/day/[id].tsx           Day editor with goal presets
 src/app/exercise/[name].tsx    Per-exercise chart and history
 src/app/session/[id].tsx       A finished workout's details, delete
 
-src/components/ui.tsx          Shared UI pieces (Screen, Card, Button, Chip, inputs…)
+src/components/ui.tsx          Shared UI pieces (Screen, Card, Button, Chip, Sheet, SetPill, Stat, inputs…)
+src/components/RangeCalendar.tsx  Date range calendar for Show more…
 src/components/RestTimer.tsx   Rest countdown, "next set" popup
 src/lib/store.ts               Persisted store and actions
 src/lib/types.ts               Data model
 src/lib/defaults.ts            Goal presets, seed days, progression, muscle groups, periods, formatting
-src/lib/stats.ts               Per-exercise history (top weight, volume)
+src/lib/stats.ts               Per-exercise history (top weight, volume), workout totals
 src/lib/theme.ts               Dark/light palettes, accent colors, live theme switching
 src/lib/notify.ts              Rest-over notification (expo-notifications)
 src/lib/sampleData.ts          Sample workout generator for testing

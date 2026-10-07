@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C, onThemeChange, R } from '@/lib/theme';
 
@@ -96,6 +96,40 @@ export function NumInput({ value, onChange, style, width = 64, placeholder = '0'
       }}
       style={[s.num, { width }, style]}
     />
+  );
+}
+
+/** Centered popup over a dimmed backdrop; tapping the backdrop closes it. Scrolls if taller than the screen. */
+export function Sheet({ visible, onClose, children, maxWidth = 480 }: { visible: boolean; onClose: () => void; children: ReactNode; maxWidth?: number }) {
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: 16 }}>
+        <Pressable onPress={() => {}} style={[s.card, { width: '100%', maxWidth, maxHeight: '90%', alignSelf: 'center', padding: 0 }]}>
+          <ScrollView contentContainerStyle={{ padding: 20 }} keyboardShouldPersistTaps="handled">
+            {children}
+          </ScrollView>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+/** Gray pill showing one set, e.g. "60 kg × 8". */
+export function SetPill({ weight, reps, units, small }: { weight: number; reps: number; units: string; small?: boolean }) {
+  return (
+    <View style={{ maxWidth: '100%', backgroundColor: 'rgba(128,128,128,0.25)', borderRadius: 999, paddingHorizontal: small ? 8 : 10, paddingVertical: small ? 3 : 4 }}>
+      <Text style={small ? { color: C.sub, fontSize: 12, fontVariant: ['tabular-nums'] } : s.muted} numberOfLines={1}>{`${weight} ${units} × ${reps}`}</Text>
+    </View>
+  );
+}
+
+/** Summary tile: big value with a small label underneath. */
+export function Stat({ label, value, size = 24 }: { label: string; value: string; size?: number }) {
+  return (
+    <View style={{ flex: 1, backgroundColor: C.card, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: C.border }}>
+      <Text style={{ color: C.text, fontSize: size, fontWeight: '800' }}>{value}</Text>
+      <Text style={{ color: C.sub, fontSize: 12 }}>{label}</Text>
+    </View>
   );
 }
 
