@@ -49,12 +49,12 @@ export default function EditDay() {
     <>
       <Stack.Screen options={{ title: isNew ? 'New day' : `Edit ${existing.name}` }} />
       <Screen>
-        <Field label="Name" value={day.name} onChangeText={(name) => setDay({ ...day, name })} placeholder="Push, Pull, Legs, Upper A…" />
+        <Field label="Name" value={day.name} onChangeText={(name) => setDay({ ...day, name })} placeholder="e.g. Push, Pull, Legs" />
         <Field label="Focus" value={day.focus} onChangeText={(focus) => setDay({ ...day, focus })} placeholder="Chest · Shoulders · Triceps" />
 
         <Card style={{ marginTop: 6 }}>
           <Text style={s.h2}>Suggested sets, reps & rest</Text>
-          <Text style={[s.muted, { marginVertical: 6 }]}>Fill every exercise with recommended targets for a goal, based on whether it’s a compound or isolation lift.</Text>
+          <Text style={[s.muted, { marginVertical: 6 }]}>Fills in sets, reps and rest for every exercise based on a goal.</Text>
           <Row style={{ marginVertical: 6 }}>
             {(Object.keys(GOAL_PRESETS) as Goal[]).map((g) => (
               <Chip key={g} label={GOAL_PRESETS[g].label} active={presetGoal === g} onPress={() => setPresetGoal(g)} />

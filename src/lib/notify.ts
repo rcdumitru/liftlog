@@ -53,7 +53,7 @@ export async function scheduleRestDone(endAt: number, label: string) {
   if (seconds < 1) return;
   try {
     const id = await Notifications.scheduleNotificationAsync({
-      content: { title: 'Rest’s over 💪', body: `Time for your next set of ${label}.`, sound: true },
+      content: { title: "Rest's over", body: `Time for your next set of ${label}.`, sound: true },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds, channelId: 'rest-timer' },
     });
     if (mine === gen) scheduled = id;

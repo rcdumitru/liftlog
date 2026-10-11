@@ -10,6 +10,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.radu.liftlog",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -28,6 +30,20 @@
       "expo-notifications"
     ],
     "scheme": "liftlog",
-    "backgroundColor": "#0E0F12"
+    "backgroundColor": "#0E0F12",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4a995376-3e5a-4412-b43f-0ea308d7cdd6"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/4a995376-3e5a-4412-b43f-0ea308d7cdd6",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    }
   }
 }

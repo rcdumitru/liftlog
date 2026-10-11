@@ -1,5 +1,5 @@
 import { Pressable, Switch, Text, View } from 'react-native';
-import { Button, Card, Chip, Row, Screen, Section, s } from '@/components/ui';
+import { Button, Card, Chip, Field, Row, Screen, Section, s } from '@/components/ui';
 import { confirm } from '@/lib/confirm';
 import { GOAL_PRESETS } from '@/lib/defaults';
 import { addSampleData, removeSampleData } from '@/lib/sampleData';
@@ -14,13 +14,21 @@ export default function Settings() {
 
   return (
     <Screen title="Settings">
-      <Section title="Units & goal" />
+      <Section title="Body & goal" />
       <Card>
         <Text style={s.label}>Units</Text>
         <Row style={{ marginBottom: 14 }}>
           <Chip label="kg" active={p.units === 'kg'} onPress={() => up({ units: 'kg' })} />
           <Chip label="lb" active={p.units === 'lb'} onPress={() => up({ units: 'lb' })} />
         </Row>
+        <Field
+          label={`Bodyweight (${p.units})`}
+          keyboardType="decimal-pad"
+          placeholder="Not set"
+          defaultValue={p.bodyweight ? String(p.bodyweight) : ''}
+          onChangeText={(t) => up({ bodyweight: Math.max(0, parseFloat(t.replace(',', '.')) || 0) })}
+        />
+        <Text style={[s.muted, { fontSize: 13, marginTop: -8, marginBottom: 14 }]}>Used to suggest starting weights and loads for bodyweight exercises.</Text>
         <Text style={s.label}>Main goal</Text>
         <Row style={{ marginBottom: 6 }}>
           {(Object.keys(GOAL_PRESETS) as Goal[]).map((g) => <Chip key={g} label={GOAL_PRESETS[g].label} active={p.goal === g} onPress={() => up({ goal: g })} />)}
@@ -57,7 +65,7 @@ export default function Settings() {
         <Row style={{ flexWrap: 'nowrap' }}>
           <View style={{ flex: 1 }}>
             <Text style={s.body}>Show weight suggestions</Text>
-            <Text style={[s.muted, { fontSize: 13 }]}>Hint above each exercise, e.g. “Hit 12 reps on every set — add 2.5”.</Text>
+            <Text style={[s.muted, { fontSize: 13 }]}>{'Shows a tip above each exercise, like "You hit 12 reps on every set. Add 2.5 kg."'}</Text>
           </View>
           <Switch
             value={p.showSuggestions}

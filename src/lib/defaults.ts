@@ -14,7 +14,7 @@ export const GOAL_PRESETS: Record<Goal, { label: string; blurb: string } & Recor
   },
   hypertrophy: {
     label: 'Muscle',
-    blurb: 'Moderate loads, 6–15 reps',
+    blurb: 'Moderate loads, 6-15 reps',
     compound: { sets: 4, reps: [6, 10], rest: 120 },
     isolation: { sets: 3, reps: [10, 15], rest: 75 },
     bodyweight: { sets: 3, reps: [8, 15], rest: 90 },
@@ -84,6 +84,7 @@ export function seedDays(): WorkoutDay[] {
 
 export const DEFAULT_PROFILE: Profile = {
   units: 'kg',
+  bodyweight: 0,
   goal: 'hypertrophy',
   showSuggestions: true,
   progressGroup: 'day',
@@ -122,22 +123,89 @@ export function lastPerformance(sessions: Session[], name: string) {
 }
 
 /**
+ * Rough novice one-rep max as a multiple of bodyweight, matched by name keyword (first match wins,
+ * so specific names come before general ones). `perHand` ratios are already per dumbbell; others
+ * are scaled down when the name says dumbbell.
+ */
+const START_RATIOS: { keys: string[]; ratio: number; perHand?: boolean }[] = [
+  { keys: ['romanian deadlift', 'rdl', 'stiff'], ratio: 0.9 },
+  { keys: ['deadlift'], ratio: 1.25 },
+  { keys: ['front squat'], ratio: 0.8 },
+  { keys: ['squat'], ratio: 1 },
+  { keys: ['leg press'], ratio: 1.75 },
+  { keys: ['hip thrust'], ratio: 1 },
+  { keys: ['overhead press', 'military', 'shoulder press'], ratio: 0.5 },
+  { keys: ['incline'], ratio: 0.65 },
+  { keys: ['bench', 'chest press'], ratio: 0.75 },
+  { keys: ['pulldown', 'pull-down'], ratio: 0.6 },
+  { keys: ['row'], ratio: 0.65 },
+  { keys: ['lateral raise', 'side raise'], ratio: 0.1, perHand: true },
+  { keys: ['leg curl', 'hamstring curl'], ratio: 0.45 },
+  { keys: ['leg extension'], ratio: 0.6 },
+  { keys: ['barbell curl', 'ez'], ratio: 0.4 },
+  { keys: ['curl'], ratio: 0.15, perHand: true },
+  { keys: ['pushdown', 'triceps extension', 'skull'], ratio: 0.4 },
+  { keys: ['face pull'], ratio: 0.35 },
+  { keys: ['fly', 'flye'], ratio: 0.15, perHand: true },
+  { keys: ['calf'], ratio: 1 },
+  { keys: ['shrug'], ratio: 1 },
+];
+/** One dumbbell is roughly 40% of the barbell weight for the same lift. */
+const DUMBBELL_SHARE = 0.4;
+
+/** A conservative first working weight from bodyweight, or null if there's nothing sensible to suggest. */
+function startingWeight(exercise: Exercise, bodyweight: number): number | null {
+  if (bodyweight <= 0 || (exercise.kind !== 'compound' && exercise.kind !== 'isolation')) return null;
+  const name = norm(exercise.name);
+  const hit = START_RATIOS.find((r) => r.keys.some((k) => name.includes(k)));
+  let ratio = hit?.ratio ?? (exercise.kind === 'compound' ? 0.6 : 0.25);
+  if (!hit?.perHand && /dumbbell|\bdb\b/.test(name)) ratio *= DUMBBELL_SHARE;
+  // Weight you could lift for the top of the range with ~2 reps left (Epley).
+  const w = (bodyweight * ratio) / (1 + (exercise.repsMax + 2) / 30);
+  const inc = exercise.increment > 0 ? exercise.increment : 1;
+  return round(Math.max(inc, Math.floor(w / inc) * inc));
+}
+
+/**
  * Double progression: if every working set last time hit the top of the rep range,
  * add the increment. If any set fell below the bottom of the range, hold (or deload
  * after a clear miss). Otherwise keep the weight and chase more reps.
+ * With a bodyweight set, first sessions get a starting weight and bodyweight exercises
+ * deload on total load (you + added weight). For bodyweight exercises `weight` is the added weight.
  */
-export function suggestNext(sessions: Session[], exercise: Exercise): { weight: number | null; reason: string } {
+export function suggestNext(sessions: Session[], exercise: Exercise, bodyweight = 0, units = ''): { weight: number | null; reason: string } {
+  const u = units ? ` ${units}` : '';
+  const isBw = exercise.kind === 'bodyweight';
   const last = lastPerformance(sessions, exercise.name);
-  if (!last) return { weight: null, reason: 'First time — pick a weight you can do for the top of the range with 2 reps left.' };
+  if (!last) {
+    if (isBw) return { weight: 0, reason: `First time. Start with just your bodyweight and add weight once you get ${exercise.repsMax} reps on every set.` };
+    const start = startingWeight(exercise, bodyweight);
+    if (start !== null)
+      return { weight: start, reason: `First time. Try around ${start}${u}, based on your bodyweight. You should be able to do ${exercise.repsMax + 2} reps with it.` };
+    return { weight: null, reason: `First time. Pick a weight you could lift for ${exercise.repsMax + 2} reps.` };
+  }
   const done = last.entry.sets.filter((s) => s.done);
   const top = Math.max(...done.map((s) => s.weight));
   const working = done.filter((s) => s.weight === top);
   const allTop = working.length >= exercise.sets && working.every((s) => s.reps >= exercise.repsMax);
   const missed = working.filter((s) => s.reps < exercise.repsMin).length;
-  if (allTop) return { weight: round(top + exercise.increment), reason: `Hit ${exercise.repsMax} reps on every set — add ${exercise.increment}.` };
-  if (missed >= Math.ceil(working.length / 2) && working.length > 1)
-    return { weight: round(top * 0.9), reason: 'Missed the rep range on most sets — drop ~10% and build back up.' };
-  return { weight: top, reason: `Stay at ${top} and add reps until every set hits ${exercise.repsMax}.` };
+  if (allTop) return { weight: round(top + exercise.increment), reason: `You hit ${exercise.repsMax} reps on every set. Add ${exercise.increment}${u}.` };
+  if (missed >= Math.ceil(working.length / 2) && working.length > 1) {
+    if (isBw) {
+      if (bodyweight > 0) {
+        const total = bodyweight + top;
+        const added = round(total * 0.9 - bodyweight);
+        if (added > 0) return { weight: added, reason: `You missed the rep range on most sets. Drop to +${added}${u} and build back up.` };
+        if (top > 0) return { weight: 0, reason: 'You missed the rep range on most sets. Drop the added weight and build back up.' };
+        const assist = round(total * 0.1);
+        return { weight: 0, reason: `You missed the rep range on most sets. Use about ${assist}${u} of assistance (band or machine) or do fewer reps.` };
+      }
+      if (top <= 0) return { weight: 0, reason: 'You missed the rep range on most sets. Use a band or assisted machine, or do fewer reps.' };
+    }
+    return { weight: round(top * 0.9), reason: 'You missed the rep range on most sets. Drop the weight by about 10% and build back up.' };
+  }
+  const at = isBw ? (top > 0 ? `bodyweight +${top}${u}` : 'bodyweight') : `${top}${u}`;
+  return { weight: top, reason: `Stay at ${at} and add reps until every set hits ${exercise.repsMax}.` };
 }
 
 const round = (n: number) => Math.round(n * 4) / 4;

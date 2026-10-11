@@ -80,7 +80,7 @@ export default function Train() {
                 <Row key={e.id} style={{ flexWrap: 'nowrap' }}>
                   <Text style={[s.body, { flex: 1 }]} numberOfLines={1}>{e.name}</Text>
                   <Text style={{ color: C.sub, fontVariant: ['tabular-nums'] }}>
-                    {e.sets}×{e.repsMin === e.repsMax ? e.repsMin : `${e.repsMin}–${e.repsMax}`} · {formatRest(e.restSec)}
+                    {e.sets}×{e.repsMin === e.repsMax ? e.repsMin : `${e.repsMin}-${e.repsMax}`} · {formatRest(e.restSec)}
                   </Text>
                 </Row>
               ))}
@@ -134,7 +134,7 @@ export default function Train() {
                 {shown < recent.length ? (
                   // Loads automatically near the bottom; tapping is a fallback.
                   <Pressable onPress={loadMore} hitSlop={8} style={{ alignSelf: 'center', paddingVertical: 12 }}>
-                    <Text style={s.muted}>Load more…</Text>
+                    <Text style={s.muted}>Load more</Text>
                   </Pressable>
                 ) : null}
               </ScrollView>
@@ -152,7 +152,7 @@ export default function Train() {
           ) : null}
           {!period && sessions.length > 5 ? (
             <Pressable onPress={() => setPicking(true)} hitSlop={8} style={{ alignSelf: 'center', paddingVertical: 10 }}>
-              <Text style={{ color: C.accent, fontWeight: '700' }}>Show more…</Text>
+              <Text style={{ color: C.accent, fontWeight: '700' }}>Show more</Text>
             </Pressable>
           ) : null}
         </>
@@ -202,7 +202,7 @@ function PeriodPicker({ visible, onClose, onPick }: { visible: boolean; onClose:
   const pickCustom = () => {
     if (!start) return;
     const last = end ?? start; // one tapped day = just that day
-    const title = last.getTime() === start.getTime() ? formatDate(start.toISOString()) : `${formatDate(start.toISOString())} – ${formatDate(last.toISOString())}`;
+    const title = last.getTime() === start.getTime() ? formatDate(start.toISOString()) : `${formatDate(start.toISOString())} - ${formatDate(last.toISOString())}`;
     onPick({ title, from: start.getTime(), to: new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1).getTime() - 1 });
   };
 
@@ -215,14 +215,14 @@ function PeriodPicker({ visible, onClose, onPick }: { visible: boolean; onClose:
               </Pressable>
             ))}
             <Pressable onPress={() => setCustom((v) => !v)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', paddingVertical: 12, opacity: pressed ? 0.6 : 1 })}>
-              <Text style={[s.body, { flex: 1 }]}>Custom dates…</Text>
+              <Text style={[s.body, { flex: 1 }]}>Custom dates</Text>
               <Ionicons name={custom ? 'chevron-up' : 'chevron-down'} size={18} color={C.sub} />
             </Pressable>
             {custom ? (
               <View style={{ marginBottom: 4 }}>
                 <RangeCalendar start={start} end={end} onChange={(a, b) => { setStart(a); setEnd(b); }} />
                 <Text style={[s.muted, { fontSize: 13, textAlign: 'center', marginTop: 8 }]}>
-                  {!start ? 'Tap a start date' : !end ? `${formatDate(start.toISOString())} – tap an end date` : `${formatDate(start.toISOString())} – ${formatDate(end.toISOString())}`}
+                  {!start ? 'Tap a start date' : !end ? `From ${formatDate(start.toISOString())}. Tap an end date` : `${formatDate(start.toISOString())} - ${formatDate(end.toISOString())}`}
                 </Text>
                 <Button label="Show these dates" disabled={!start} onPress={pickCustom} style={{ marginTop: 10 }} />
               </View>

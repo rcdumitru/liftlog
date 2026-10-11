@@ -20,10 +20,11 @@ export default function Workout() {
   const sessions = useStore((st) => st.sessions);
   const units = useStore((st) => st.profile.units);
   const showSuggestions = useStore((st) => st.profile.showSuggestions);
+  const bodyweight = useStore((st) => st.profile.bodyweight);
 
   const suggestions = useMemo(
-    () => Object.fromEntries((day?.exercises ?? []).map((e) => [e.id, suggestNext(sessions, e)])),
-    [day, sessions],
+    () => Object.fromEntries((day?.exercises ?? []).map((e) => [e.id, suggestNext(sessions, e, bodyweight, units)])),
+    [day, sessions, bodyweight, units],
   );
 
   const [help, setHelp] = useState(false);
@@ -45,7 +46,7 @@ export default function Workout() {
   );
 
   if (!day) return <Screen><Empty text="This day no longer exists." /></Screen>;
-  if (!active || active.dayId !== day.id) return <Screen><Empty text="Another workout is in progress — finish it first." /></Screen>;
+  if (!active || active.dayId !== day.id) return <Screen><Empty text="Another workout is in progress. Finish it first." /></Screen>;
 
   const doneSets = active.entries.reduce((t, e) => t + e.sets.filter((x) => x.done).length, 0);
   const totalSets = active.entries.reduce((t, e) => t + e.sets.length, 0);
@@ -184,7 +185,7 @@ export default function Workout() {
               <Row style={{ marginTop: 6, gap: 6 }}>
                 <Tag
                   icon="repeat"
-                  text={`${entry.sets.length} × ${entry.target.repsMin === entry.target.repsMax ? entry.target.repsMin : `${entry.target.repsMin}–${entry.target.repsMax}`}`}
+                  text={`${entry.sets.length} × ${entry.target.repsMin === entry.target.repsMax ? entry.target.repsMin : `${entry.target.repsMin}-${entry.target.repsMax}`}`}
                   onPress={ex && !isEditing ? () => toggleEditor(ei) : undefined}
                 />
                 {ex ? <Tag icon="timer-outline" text={`Rest ${formatRest(ex.restSec)}`} onPress={!isEditing ? () => toggleEditor(ei) : undefined} /> : null}
@@ -201,7 +202,7 @@ export default function Workout() {
                       <Text style={s.label}>Reps</Text>
                       <Row style={{ flexWrap: 'nowrap', gap: 6 }}>
                         <NumInput width={52} value={entry.target.repsMin} onChange={(n) => editExercise(ei, { repsMin: Math.round(n) })} />
-                        <Text style={s.muted}>–</Text>
+                        <Text style={s.muted}>-</Text>
                         <NumInput width={52} value={entry.target.repsMax} onChange={(n) => editExercise(ei, { repsMax: Math.round(n) })} />
                       </Row>
                     </View>
@@ -241,11 +242,11 @@ export default function Workout() {
                       {prev ? (
                         <SetPill small weight={prev.weight} reps={prev.reps} units={units} />
                       ) : (
-                        <Text style={{ color: C.faint, fontSize: 13 }}>–</Text>
+                        <Text style={{ color: C.faint, fontSize: 13 }}>-</Text>
                       )}
                     </View>
-                    <NumInput width={72} value={set.weight} showZero={set.weightEntered} placeholder={prev ? String(prev.weight) : '–'} onChange={(n, empty) => updateSet(ei, si, { weight: n, weightEntered: !empty })} />
-                    <NumInput width={56} value={set.reps} showZero={set.repsEntered} placeholder={prev ? String(prev.reps) : '–'} onChange={(n, empty) => updateSet(ei, si, { reps: Math.round(n), repsEntered: !empty })} />
+                    <NumInput width={72} value={set.weight} showZero={set.weightEntered} placeholder={prev ? String(prev.weight) : '-'} onChange={(n, empty) => updateSet(ei, si, { weight: n, weightEntered: !empty })} />
+                    <NumInput width={56} value={set.reps} showZero={set.repsEntered} placeholder={prev ? String(prev.reps) : '-'} onChange={(n, empty) => updateSet(ei, si, { reps: Math.round(n), repsEntered: !empty })} />
                     <Pressable
                       onPress={() => toggleDone(ei, si, prev)}
                       hitSlop={8}
@@ -292,12 +293,12 @@ function Tag({ icon, text, onPress }: { icon: keyof typeof Ionicons.glyphMap; te
 const HELP: [keyof typeof Ionicons.glyphMap, string, string][] = [
   ['time-outline', 'Previous', 'Each row shows what you did on that set last time you trained this exercise.'],
   ['create-outline', 'Log what you did', 'After each set, enter the weight and reps you actually did, then tap ✓. The rest timer starts automatically.'],
-  ['checkmark-done-outline', 'Same as last time?', 'Leave the boxes empty and just tap ✓ — it logs last time’s weight and reps.'],
-  ['create-outline', 'Edit an exercise', 'Tap ✎ (or any of its tags) to change the name, rep range, rest or how much to increase by. Changes are saved to the day. The sets tag follows + Set / − Set.'],
+  ['checkmark-done-outline', 'Same as last time?', "Leave the boxes empty and tap ✓ to log last time's weight and reps."],
+  ['create-outline', 'Edit an exercise', 'Tap ✎ or any of its tags to change the name, rep range, rest or increase. Changes are saved to the day. Use + Set / − Set to change the number of sets.'],
   ['document-text-outline', 'Notes', 'Tap the notes icon next to an exercise to add instructions, e.g. seat height or grip. They show under the exercise every time.'],
-  ['eye-outline', 'Just looking', 'Opening a day doesn’t start a workout. If you leave without ticking any set, nothing is saved and no "in progress" card is left behind.'],
-  ['play-outline', 'In progress', 'Once you tick a set, the workout stays in progress — you can leave and resume it from the Train tab until you finish or discard it.'],
-  ['flag-outline', 'Finish', 'Tap Finish workout to save. Only ticked sets are saved, and they become your "previous" numbers next time.'],
+  ['eye-outline', 'Just looking', "Opening a day doesn't start a workout. If you leave without ticking a set, nothing is saved."],
+  ['play-outline', 'In progress', 'Once you tick a set, the workout stays open. You can leave and come back to it from the Train tab until you finish or discard it.'],
+  ['flag-outline', 'Finish', 'Tap Finish workout to save. Only ticked sets are saved, and they show up as Previous next time.'],
 ];
 
 function HelpSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {

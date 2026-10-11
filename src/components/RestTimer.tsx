@@ -91,7 +91,7 @@ export function RestTimerBar() {
           <View style={[st.fill, { width: '100%' }]} />
           <View style={{ flex: 1 }}>
             <Text style={st.small}>REST OVER · {done.label}</Text>
-            <Text style={[st.time, { fontSize: 22 }]}>Start your next set 💪</Text>
+            <Text style={[st.time, { fontSize: 22 }]}>Start your next set</Text>
           </View>
           <View style={[st.btn, { backgroundColor: C.accent }]}><Text style={[st.btnText, { color: C.accentInk }]}>OK</Text></View>
         </Pressable>

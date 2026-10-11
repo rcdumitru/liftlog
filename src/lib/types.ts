@@ -53,6 +53,8 @@ export interface Session {
 
 export interface Profile {
   units: Units;
+  /** In `units`; 0 = not set. Used for starting-weight and bodyweight-exercise suggestions. */
+  bodyweight: number;
   goal: Goal;
   /** Show the next-weight hint above each exercise's sets during a workout. */
   showSuggestions: boolean;

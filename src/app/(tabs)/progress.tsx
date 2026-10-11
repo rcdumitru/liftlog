@@ -98,7 +98,7 @@ export default function Progress() {
             <Chip label={`Show all time (${matches.length})`} onPress={() => setPeriod(PERIODS[PERIODS.length - 1])} />
           </View>
         ) : (
-          <Empty text={`No exercises match “${query.trim()}”.`} />
+          <Empty text={`No exercises match "${query.trim()}".`} />
         )
       ) : null}
       {groups.map(([group, items]) => (
