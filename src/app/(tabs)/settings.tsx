@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Pressable, Switch, Text, View } from 'react-native';
-import { Button, Card, Chip, Field, Row, Screen, Section, s } from '@/components/ui';
+import { Button, Card, Chip, Field, Row, Screen, Section, Sheet, s } from '@/components/ui';
+import { applyBackup, Backup, exportBackup, pickBackup } from '@/lib/backup';
 import { confirm } from '@/lib/confirm';
-import { GOAL_PRESETS } from '@/lib/defaults';
+import { formatDate, GOAL_PRESETS } from '@/lib/defaults';
 import { addSampleData, removeSampleData } from '@/lib/sampleData';
-import { actions, useStore } from '@/lib/store';
+import { actions, getState, useStore } from '@/lib/store';
 import { ACCENTS, AccentKey, C, isDark, ThemeMode, useTheme } from '@/lib/theme';
 import type { Goal } from '@/lib/types';
 
@@ -11,6 +13,32 @@ export default function Settings() {
   useTheme();
   const p = useStore((st) => st.profile);
   const up = actions.updateProfile;
+  const dayCount = useStore((st) => st.days.length);
+  const workoutCount = useStore((st) => st.sessions.length);
+  const [pending, setPending] = useState<Backup | null>(null);
+  const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+
+  const run = async (task: () => Promise<void>) => {
+    setMessage(null);
+    try {
+      await task();
+    } catch (e) {
+      setMessage({ text: e instanceof Error ? e.message : 'Something went wrong.', error: true });
+    }
+  };
+  const doImport = (mode: 'merge' | 'replace') => {
+    if (!pending) return;
+    const before = getState();
+    applyBackup(pending, mode);
+    const after = getState();
+    setPending(null);
+    setMessage({
+      text:
+        mode === 'replace'
+          ? `Restored ${after.days.length} days and ${after.sessions.length} workouts.`
+          : `Added ${after.days.length - before.days.length} days and ${after.sessions.length - before.sessions.length} workouts.`,
+    });
+  };
 
   return (
     <Screen title="Settings">
@@ -77,6 +105,38 @@ export default function Settings() {
       </Card>
 
       <Section title="Data" />
+      <Card>
+        <Text style={s.h2}>Backup</Text>
+        <Text style={[s.muted, { fontSize: 13, marginTop: 4, marginBottom: 12 }]}>
+          Save all your days, workouts and settings as a JSON file — to keep it safe or move it to another phone. You have {dayCount} days and {workoutCount} workouts.
+        </Text>
+        <Row style={{ gap: 10, flexWrap: 'nowrap' }}>
+          <Button label="Export" onPress={() => run(exportBackup)} style={{ flex: 1 }} />
+          <Button kind="ghost" label="Import" onPress={() => run(async () => { const b = await pickBackup(); if (b) setPending(b); })} style={{ flex: 1 }} />
+        </Row>
+        {message ? <Text style={{ color: message.error ? C.danger : C.good, fontSize: 13, marginTop: 10 }}>{message.text}</Text> : null}
+      </Card>
+      <Sheet visible={!!pending} onClose={() => setPending(null)}>
+        {pending ? (
+          <>
+            <Text style={s.h2}>Import backup</Text>
+            <Text style={[s.muted, { marginTop: 4, marginBottom: 14 }]}>
+              {pending.exportedAt ? `Exported ${formatDate(pending.exportedAt)} · ` : ''}{pending.days.length} days · {pending.sessions.length} workouts
+            </Text>
+            <Button label="Merge with my data" onPress={() => doImport('merge')} />
+            <Text style={[s.muted, { fontSize: 12, marginTop: 4, marginBottom: 12 }]}>Adds days and workouts you don’t have yet. Your settings stay as they are.</Text>
+            <Button
+              kind="danger"
+              label="Replace everything"
+              onPress={async () => {
+                if (await confirm('Replace everything?', 'Your current days, workouts and settings are replaced by the backup. This can’t be undone.', 'Replace')) doImport('replace');
+              }}
+            />
+            <Text style={[s.muted, { fontSize: 12, marginTop: 4, marginBottom: 12 }]}>Swaps all your data and settings for the backup’s, and drops a workout in progress.</Text>
+            <Button kind="ghost" label="Cancel" onPress={() => setPending(null)} />
+          </>
+        ) : null}
+      </Sheet>
       <Button
         kind="danger"
         label="Delete workout history"

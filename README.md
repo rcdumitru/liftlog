@@ -38,6 +38,7 @@ All data stays on the device. There are no accounts, no backend and no network r
 - **Main goal:** the default preset in the day editor.
 - **Appearance:** dark or light theme, plus an accent color (Lime, Blue, Orange, Pink, Purple).
 - **Weight suggestions:** show or hide them.
+- **Backup:** export all days, workouts and settings as a JSON file. On a phone this opens the share sheet, so you can save it to Files or Drive or send it to another phone. On the web it downloads. Import a backup to **merge** it with your data (adds what you don't have and keeps your settings) or **replace** everything.
 - **Data:** delete your workout history (days and settings are kept), or reset everything.
 
 ## Run it
@@ -74,7 +75,15 @@ npx eas-cli@latest build -p android  # Play Store / APK build
 
 The app's state is held in memory: days, workouts, the workout in progress, and settings. Every change saves it as one JSON object under the key `liftlog:v1` in [AsyncStorage](https://react-native-async-storage.github.io/async-storage/). On the web that is the browser's `localStorage`.
 
-Each device and browser keeps its own copy, and nothing is synced between them. Sample workouts have ids starting with `sample-`, so they can be removed on their own.
+Each device and browser keeps its own copy, and nothing is synced between them. Use **Settings → Backup** to move data between devices.
+
+A backup file has the same data, plus an app tag and a format number, so newer versions of the app can read older backups:
+
+```json
+{ "app": "liftlog", "format": 1, "exportedAt": "…", "profile": {…}, "days": […], "sessions": […] }
+```
+
+On import, every item is checked. Missing fields get defaults and broken items are skipped, so a hand-edited file can't break the app. A workout in progress is not included. Sample workouts have ids starting with `sample-`, so they can be removed on their own.
 
 ## Code map
 
@@ -99,5 +108,6 @@ src/lib/stats.ts               Per-exercise history (top weight, volume), workou
 src/lib/theme.ts               Dark/light palettes, accent colors, live theme switching
 src/lib/notify.ts              Rest-over notification (expo-notifications)
 src/lib/sampleData.ts          Sample workout generator for testing
+src/lib/backup.ts              Backup export (share sheet / download) and import (validate, merge or replace)
 src/lib/confirm.ts             Cross-platform confirm dialog
 ```

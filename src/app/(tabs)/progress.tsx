@@ -91,7 +91,7 @@ export default function Progress() {
       ) : null}
       {hist.length === 0 ? (
         !all.length ? (
-          <Empty text="Finish a workout and your lifts will show up here." />
+          <Empty text="Finish a workout and your exercises will show up here." />
         ) : matches.length ? (
           <View style={{ alignItems: 'center' }}>
             <Empty text={q ? `No matches logged in the selected period.` : 'No exercises logged in the selected period.'} />
